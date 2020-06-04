@@ -10,7 +10,7 @@ OneSync - This mod will not work without OneSync.
 
 ## Installation
 
-Download from the releases tab in GitHub. Extract and place the enc0ded-persistent-vehicles folder in your resources folder. Start the resource.
+Download or clone from repo. Place the enc0ded-persistent-vehicles folder in your resources folder. Start the resource.
 
 ```bash
 start enc0ded-persistent-vehicles
