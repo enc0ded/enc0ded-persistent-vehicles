@@ -44,7 +44,9 @@ end)
 
 RegisterServerEvent('persistent-vehicles/save-vehicles-to-file')
 AddEventHandler('persistent-vehicles/save-vehicles-to-file', function ()
-  PV.SavedPlayerVehiclesToFile()
+  if Config.populateOnReboot then
+    PV.SavedPlayerVehiclesToFile()
+  end
   print('Persistent Vehicles: All vehicles saved to file')
 end)
 
@@ -239,16 +241,13 @@ Citizen.CreateThread(function ()
   
   local players
   local payloads, requests = {}, 0
-
   while true do
     repeat
       Citizen.Wait(Config.runEvery * 1000)
       players = PV.GetPlayers()
     until #players > 0
-    
     payloads = {}
     requests = 0
-
     -- get the client which is currently closest to this vehicle
     for plate, data in pairs(PV.vehicles) do
       if DoesEntityExist(data.entity) then

@@ -7,8 +7,8 @@ end)
 
 RegisterNetEvent('persistent-vehicles/forget-vehicle')
 AddEventHandler('persistent-vehicles/forget-vehicle', function (entity)
-	Wait(0)
-	TriggerServerEvent('persistent-vehicles/server/forget-vehicle', _Utils.Trim(GetVehicleNumberPlateText(entity)))
+	local plate = _Utils.Trim(GetVehicleNumberPlateText(entity))
+	TriggerServerEvent('persistent-vehicles/server/forget-vehicle', plate)
 end)
 
 RegisterNetEvent('persistent-vehicles/spawn-vehicles')
