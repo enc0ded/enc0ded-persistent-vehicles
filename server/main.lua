@@ -268,7 +268,9 @@ Citizen.CreateThread(function ()
         data.props.fuelLevel = 25 -- maybe GetVehicleFuelLevel() will be implemented server side one day?
         --data.props.engineHealth = GetVehicleEngineHealth(data.entity) -- not working properly atm
         --data.props.dirtLevel = GetVehicleDirtLevel(data.entity) -- not working properly atm
-      else
+      elseif data.pos then
+
+
         local closestPlayerId, closestDistance = PV.GetClosestPlayerToCoords(data.pos)
 
         -- only spawn the vehicle if a client is close enough
