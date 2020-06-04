@@ -6,18 +6,17 @@ local PV = {
 }
 
 -- events
-RegisterServerEvent('persistent-vehicles/register-vehicle')
-AddEventHandler('persistent-vehicles/register-vehicle', function (netId, props)
+RegisterServerEvent('persistent-vehicles/server/register-vehicle')
+AddEventHandler('persistent-vehicles/server/register-vehicle', function (netId, props)
   local _source = source
   if type(netId) ~= 'number' then return end
   PV.RegisterVehicle(netId, props)
   PV.players[_source] = true
 end)
 
-RegisterServerEvent('persistent-vehicles/forget-vehicle')
-AddEventHandler('persistent-vehicles/forget-vehicle', function (netId)
-  if type(netId) ~= 'number' then return end
-  PV.ForgetVehicle(netId)
+RegisterServerEvent('persistent-vehicles/server/forget-vehicle')
+AddEventHandler('persistent-vehicles/server/forget-vehicle', function (plate)
+  PV.ForgetVehicle(plate)
 end)
 
 
@@ -206,11 +205,11 @@ function PV.Tablelength(table)
   return count
 end
 
-function PV.ForgetVehicle(netId)
-  if not netId then return end
-  PV.vehicles[netId] = nil
+function PV.ForgetVehicle(plate)
+  if not plate then return end
+  PV.vehicles[plate] = nil
   if PV.debugging then
-    print('Persistent Vehicles: Forgotten Vehicle', netId)
+    print('Persistent Vehicles: Forgotten Vehicle', plate)
   end
 end
 

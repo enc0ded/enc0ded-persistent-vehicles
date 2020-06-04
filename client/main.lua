@@ -2,8 +2,16 @@ RegisterNetEvent('persistent-vehicles/register-vehicle')
 AddEventHandler('persistent-vehicles/register-vehicle', function (entity)
 	Wait(0)
 	local props = _Utils.GetVehicleProperties(entity)
-	TriggerServerEvent('persistent-vehicles/register-vehicle', NetworkGetNetworkIdFromEntity(entity), props)
+	TriggerServerEvent('persistent-vehicles/server/register-vehicle', NetworkGetNetworkIdFromEntity(entity), props)
 end)
+
+RegisterNetEvent('persistent-vehicles/forget-vehicle')
+AddEventHandler('persistent-vehicles/forget-vehicle', function (entity)
+	print('GHELLo')
+	Wait(0)
+	TriggerServerEvent('persistent-vehicles/server/forget-vehicle', _Utils.Trim(GetVehicleNumberPlateText(entity)))
+end)
+
 
 RegisterNetEvent('persistent-vehicles/spawn-vehicles')
 AddEventHandler('persistent-vehicles/spawn-vehicles', function (datas)
