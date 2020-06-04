@@ -155,7 +155,7 @@ function PV.GetPlayers()
 end
 
 function PV.GetClosestPlayerToCoords(coords)
-
+  Wait(0)
   local players = PV.GetPlayers()
   if #players == 0 then return end
 
@@ -181,10 +181,6 @@ end
 
 function PV.RegisterVehicle(netId, props)
   if PV.vehicles[props.plate] ~= nil then return end
-  if PV.Tablelength(PV.vehicles) > 90 then
-    PV.CullVehicles(2)
-  end
-
   -- don't register the vehicle immediately incase it is deleted straight away
   Citizen.SetTimeout(1500, function ()
     local entity = PV.GetVehicleEntityFromNetId(netId)
@@ -238,6 +234,9 @@ Citizen.CreateThread(function ()
     payloads = {}
     requests = 0
     for plate, data in pairs(PV.vehicles) do
+
+        -- get the client which is currently closest to this vehicle
+
       if DoesEntityExist(data.entity) then
         local coords =  GetEntityCoords(data.entity)
         local rot = GetEntityRotation(data.entity)
@@ -261,11 +260,9 @@ Citizen.CreateThread(function ()
 
       elseif data.pos then
 
-        -- get the client which is currently closest to this vehicle
         local closestPlayerId, closestDistance = PV.GetClosestPlayerToCoords(data.pos)
-
         -- only spawn the vehicle if a client is close enough
-        if closestPlayerId ~= nil and closestDistance < 500 then
+        if closestPlayerId ~= nil and closestDistance < Config.respawnDistance then
           if payloads[closestPlayerId] == nil then
             payloads[closestPlayerId] = {}
           end
@@ -310,3 +307,37 @@ Citizen.CreateThread(function ()
 
   end
 end)
+
+if Config.entityManagement then
+  Citizen.CreateThread(function()
+    while true do 
+      Wait(2500)
+      
+      local payloads = {}
+      local vehicles = GetAllVehicles()
+
+      for i = 1, #vehicles do
+        Wait(0)
+        local entity = vehicles[i]
+        if entity > 0 and DoesEntityExist(entity) then
+          local coords = GetEntityCoords(entity)
+          local closestPlayerId, closestDistance = PV.GetClosestPlayerToCoords(coords)
+          if closestDistance > Config.entityManagementDistance then
+            local playerSource = NetworkGetEntityOwner(entity)
+            if not payloads[playerSource] then
+              payloads[playerSource] = {}
+            end
+            table.insert(payloads[playerSource], NetworkGetNetworkIdFromEntity(entity))
+          end
+        end
+      end
+
+      for _source, payload in pairs(payloads) do
+        TriggerClientEvent('persistent-vehicles/remove-vehicle', _source, payload)
+        if PV.debugging then
+          print('Persistent Vehicles: Deleting Distant Entities | Amount:', #payload, 'Client:', _source, 'Entities\' NetIds:', table.concat( payload, ", "))
+        end
+      end
+    end
+  end)
+end

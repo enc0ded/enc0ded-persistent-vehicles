@@ -23,6 +23,13 @@ AddEventHandler('persistent-vehicles/spawn-vehicles', function (datas)
 	TriggerServerEvent('persistent-vehicles/done-spawning', updatedNetIds)
 end)
 
+RegisterNetEvent('persistent-vehicles/remove-vehicle')
+AddEventHandler('persistent-vehicles/remove-vehicle', function (netIds)
+	for i=1, #netIds do
+	DeleteEntity(NetToEnt(netIds[i]))
+	end
+end)
+
 Citizen.CreateThread(function() 
 	while not DoesEntityExist(PlayerPedId(-1)) do
 		Wait(100)
