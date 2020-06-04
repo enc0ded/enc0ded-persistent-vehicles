@@ -25,7 +25,7 @@ end)
 
 Citizen.CreateThread(function() 
 	while not DoesEntityExist(PlayerPedId(-1)) do
-		Wait(1000)
+		Wait(100)
 	end
 	TriggerServerEvent('persistent-vehicles/new-player') 
 end)

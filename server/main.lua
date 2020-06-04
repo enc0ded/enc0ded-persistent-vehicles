@@ -127,16 +127,6 @@ function PV.SavedPlayerVehiclesToFile()
   end
 end
 
-function PV.DoesVehicleExist(entity)
-  local vehicles = GetAllVehicles()
-  for i = 1, #vehicles do
-    if vehicles[i] == entity then
-      return true
-    end
-  end
-  return false
-end
-
 function PV.GetVehicleEntityFromNetId(netId)
   local vehicles = GetAllVehicles()
   for i = 1, #vehicles do
@@ -164,7 +154,6 @@ function PV.GetPlayers()
 	return players
 end
 
-
 function PV.GetClosestPlayerToCoords(coords)
 
   local players = PV.GetPlayers()
@@ -184,6 +173,12 @@ function PV.GetClosestPlayerToCoords(coords)
   return closestPlayerId, closestDist
 end
 
+function PV.Tablelength(table)
+  local count = 0
+  for _ in pairs(table) do count = count + 1 end
+  return count
+end
+
 function PV.RegisterVehicle(netId, props)
   if PV.vehicles[props.plate] ~= nil then return end
   if PV.Tablelength(PV.vehicles) > 90 then
@@ -199,12 +194,6 @@ function PV.RegisterVehicle(netId, props)
       print('Persistent Vehicles: Registered Vehicle', props.plate, netId, entity)
     end
   end)
-end
-
-function PV.Tablelength(table)
-  local count = 0
-  for _ in pairs(table) do count = count + 1 end
-  return count
 end
 
 function PV.ForgetVehicle(plate)
@@ -248,7 +237,6 @@ Citizen.CreateThread(function ()
     until #players > 0
     payloads = {}
     requests = 0
-    -- get the client which is currently closest to this vehicle
     for plate, data in pairs(PV.vehicles) do
       if DoesEntityExist(data.entity) then
         local coords =  GetEntityCoords(data.entity)
@@ -261,15 +249,19 @@ Citizen.CreateThread(function ()
           h = GetEntityHeading(data.entity),
           r = { x = rot.x, y = rot.y, z = rot.z }
         }
-        data.props.locked = GetVehicleDoorLockStatus(data.entity)
-        data.props.bodyHealth = GetVehicleBodyHealth(data.entity)
-        data.props.tankHealth = tonumber(GetVehiclePetrolTankHealth(data.entity))
-        data.props.fuelLevel = 25 -- maybe GetVehicleFuelLevel() will be implemented server side one day?
-        --data.props.engineHealth = GetVehicleEngineHealth(data.entity) -- not working properly atm
-        --data.props.dirtLevel = GetVehicleDirtLevel(data.entity) -- not working properly atm
+
+        if data.props then
+          data.props.locked = GetVehicleDoorLockStatus(data.entity)
+          data.props.bodyHealth = GetVehicleBodyHealth(data.entity)
+          data.props.tankHealth = tonumber(GetVehiclePetrolTankHealth(data.entity))
+          data.props.fuelLevel = 25 -- maybe GetVehicleFuelLevel() will be implemented server side one day?
+          --data.props.engineHealth = GetVehicleEngineHealth(data.entity) -- not working properly atm
+          --data.props.dirtLevel = GetVehicleDirtLevel(data.entity) -- not working properly atm
+        end
+
       elseif data.pos then
 
-
+        -- get the client which is currently closest to this vehicle
         local closestPlayerId, closestDistance = PV.GetClosestPlayerToCoords(data.pos)
 
         -- only spawn the vehicle if a client is close enough
@@ -279,6 +271,12 @@ Citizen.CreateThread(function ()
           end
           table.insert(payloads[closestPlayerId], data)
           requests = requests + 1
+        end
+
+      else
+        PV.ForgetVehicle(data.props.plate)
+        if PV.debugging then
+          print('Persistent Vehicles: Warning', data.props.plate, 'did have time to update its position before it was deleted')
         end
       end
     end
