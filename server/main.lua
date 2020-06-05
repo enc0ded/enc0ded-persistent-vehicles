@@ -265,9 +265,11 @@ Citizen.CreateThread(function ()
         if closestPlayerId ~= nil and closestDistance < Config.respawnDistance then
           if payloads[closestPlayerId] == nil then
             payloads[closestPlayerId] = {}
+            requests = requests + 1
           end
-          table.insert(payloads[closestPlayerId], data)
-          requests = requests + 1
+          if #payloads[closestPlayerId] < 30 then
+            table.insert(payloads[closestPlayerId], data)
+          end
         end
 
       else

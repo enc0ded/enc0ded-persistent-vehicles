@@ -37,8 +37,7 @@ Citizen.CreateThread(function()
 	TriggerServerEvent('persistent-vehicles/new-player') 
 end)
 
---[[ 
-local num = 0.2
+--[[ local num = 0.2
 RegisterNetEvent('persistent-vehicles/test-spawn')
 AddEventHandler('persistent-vehicles/test-spawn', function (data, model)
 		local props = { plate = data, model = model or 'blista' }
@@ -51,5 +50,5 @@ AddEventHandler('persistent-vehicles/test-spawn', function (data, model)
 		num = num + 1.4
 		local entity = _Utils.CreateVehicle(props.model, coords, props, false)
 		props = _Utils.GetVehicleProperties(entity)
-		TriggerServerEvent('persistent-vehicles/register-vehicle', NetworkGetNetworkIdFromEntity(entity), props)
-end) ]]
+		TriggerServerEvent('persistent-vehicles/server/register-vehicle', NetworkGetNetworkIdFromEntity(entity), props)
+end)  ]]
