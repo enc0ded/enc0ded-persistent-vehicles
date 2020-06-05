@@ -236,7 +236,6 @@ Citizen.CreateThread(function ()
     for plate, data in pairs(PV.vehicles) do
 
         -- get the client which is currently closest to this vehicle
-
       if DoesEntityExist(data.entity) then
         local coords =  GetEntityCoords(data.entity)
         local rot = GetEntityRotation(data.entity)
@@ -258,18 +257,37 @@ Citizen.CreateThread(function ()
           --data.props.dirtLevel = GetVehicleDirtLevel(data.entity) -- not working properly atm
         end
 
+      -- attempt to create spawn event for this vehicle
       elseif data.pos then
 
-        local closestPlayerId, closestDistance = PV.GetClosestPlayerToCoords(data.pos)
+        local closestPlayerId, closestDistance
+
+        if data.closestPlayerId then
+          closestPlayerId = data.closestPlayerId
+          closestDistance = data.closestDistance
+          data.closestPlayerId = nil 
+          data.closestDistance = nil
+        else
+          closestPlayerId, closestDistance = PV.GetClosestPlayerToCoords(data.pos)
+        end
+       
         -- only spawn the vehicle if a client is close enough
         if closestPlayerId ~= nil and closestDistance < Config.respawnDistance then
+          
           if payloads[closestPlayerId] == nil then
             payloads[closestPlayerId] = {}
             requests = requests + 1
           end
-          if #payloads[closestPlayerId] < 30 then
+
+          -- to prevent exceeding the gfx pool size, send a maximum of 26 at any one time 
+          if #payloads[closestPlayerId] < 26 then
             table.insert(payloads[closestPlayerId], data)
+          else
+            -- but we'll cache this for next time as getting the closest player is pretty expensive
+            data.closestPlayerId  = closestPlayerId
+            data.closestDistance  = closestDistance
           end
+
         end
 
       else
