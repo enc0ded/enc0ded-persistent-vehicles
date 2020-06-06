@@ -10,8 +10,8 @@ RegisterServerEvent('persistent-vehicles/server/register-vehicle')
 AddEventHandler('persistent-vehicles/server/register-vehicle', function (netId, props)
   local _source = source
   if type(netId) ~= 'number' then return end
-  PV.RegisterVehicle(netId, props)
   PV.players[_source] = true
+  PV.RegisterVehicle(netId, props)
 end)
 
 RegisterServerEvent('persistent-vehicles/server/forget-vehicle')
@@ -19,6 +19,12 @@ AddEventHandler('persistent-vehicles/server/forget-vehicle', function (plate)
   PV.ForgetVehicle(plate)
 end)
 
+-- must be called from the server with TriggerEvent('persistent-vehicles/save-vehicles-to-file')
+RegisterServerEvent('persistent-vehicles/save-vehicles-to-file')
+AddEventHandler('persistent-vehicles/save-vehicles-to-file', function ()
+  if not GetInvokingResource() then return end
+  PV.SavedPlayerVehiclesToFile()
+end)
 
 RegisterServerEvent('persistent-vehicles/done-spawning')
 AddEventHandler('persistent-vehicles/done-spawning', function (response)
@@ -30,7 +36,7 @@ AddEventHandler('persistent-vehicles/done-spawning', function (response)
       if not entity then
           PV.ForgetVehicle(data.plate)
       else
-        PV.vehicles[data.plate].entity = PV.GetVehicleEntityFromNetId(data.netId)
+        PV.vehicles[data.plate].entity = entity
       end
     end
     PV.waiting[_source] = nil
@@ -40,14 +46,6 @@ AddEventHandler('persistent-vehicles/done-spawning', function (response)
     local _source = source
     print('Persistent Vehicles: Server received client spawn confirmation from:', _source)
   end
-end)
-
-RegisterServerEvent('persistent-vehicles/save-vehicles-to-file')
-AddEventHandler('persistent-vehicles/save-vehicles-to-file', function ()
-  if Config.populateOnReboot then
-    PV.SavedPlayerVehiclesToFile()
-  end
-  print('Persistent Vehicles: All vehicles saved to file')
 end)
 
 RegisterServerEvent('persistent-vehicles/new-player')
@@ -84,7 +82,7 @@ end, true)
 RegisterCommand('pv-toggle-debugging', function (source, args, rawCommand)
   if tonumber(source) > 0 then return end
   PV.debugging = not PV.debugging
-  print('Toggled debugging')
+  print('Persistent Vehicles: Toggled debugging')
 end, true)
 
 RegisterCommand('pv-shutdown', function (source, args, rawCommand)
@@ -95,38 +93,27 @@ RegisterCommand('pv-shutdown', function (source, args, rawCommand)
   end
 end, true)
 
-local total = 0
+-- pv-spawn-test <number of vehicles> <vehicle model name>
+--[[ local total = 0
 RegisterCommand('pv-spawn-test', function (source, args, rawCommand)
-  local num = args[1] or 1
-  for i = 1, tonumber(num) do
-    Wait(0) 
+	local num = 0.4
+  local ped = GetPlayerPed(source)
+  local coords = GetEntityCoords(ped)
+  local amount = args[1] or 1
+  for i = 1, tonumber(amount) do
     local plate = tostring(total)
-      TriggerClientEvent('persistent-vehicles/test-spawn', source, plate, args[2])
-      total = total + 1
+    local data = {
+      props = {model = args[2] or 'blista', plate = plate },
+      pos = {x = coords.x + num, y = coords.y + num, z = coords.z + 0.1, h = 40.0},
+    }
+    num = num + 1.45
+    total = total + 1
+    PV.vehicles[data.props.plate] = data
+    print('Debugging: Added Vehicles')
   end
-end, true)
+end, true) ]]
 
 -- global functions
-if Config.populateOnReboot then
-  local SavedPlayerVehicles = LoadResourceFile(GetCurrentResourceName(), "vehicle-data.json")
-  if SavedPlayerVehicles ~= '' then
-      PV.vehicles = json.decode(SavedPlayerVehicles)
-      if not PV.vehicles then
-          PV.vehicles = {}
-      end
-      if PV.debugging then
-          print('Persistent Vehicles: Loaded Vehicles from file')
-      end
-  end
-end
-
-function PV.SavedPlayerVehiclesToFile()
-  SaveResourceFile(GetCurrentResourceName(), "vehicle-data.json", json.encode(PV.vehicles), -1)
-  if PV.debugging then
-    print('Persistent Vehicles: Saved Vehicles to file')
-  end
-end
-
 function PV.GetVehicleEntityFromNetId(netId)
   local vehicles = GetAllVehicles()
   for i = 1, #vehicles do
@@ -135,10 +122,6 @@ function PV.GetVehicleEntityFromNetId(netId)
     end
   end
   return false
-end
-
-function PV.DistanceFrom(x1, y1, z1, x2, y2, z2) 
-  return  math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2 + (z2 - z1) ^ 2)
 end
 
 function PV.GetPlayers()
@@ -154,20 +137,19 @@ function PV.GetPlayers()
 	return players
 end
 
-function PV.GetClosestPlayerToCoords(coords)
-  Wait(0)
-  local players = PV.GetPlayers()
-  if #players == 0 then return end
+function PV.DistanceFrom(x1, y1, z1, x2, y2, z2) 
+  return  math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2 + (z2 - z1) ^ 2)
+end
 
+function PV.GetClosestPlayerToCoords(coords)
   local closestDist, closestPlayerId
 
-  for i = 1, #players do
-    local playerCoords = GetEntityCoords(GetPlayerPed(players[i]))
+  for playerId in pairs(PV.players) do
+    local playerCoords = GetEntityCoords(GetPlayerPed(playerId))
     local dist = PV.DistanceFrom(coords.x, coords.y, coords.z, playerCoords.x, playerCoords.y, playerCoords.z)
-    
     if not closestDist or dist <= closestDist then
         closestDist = dist
-        closestPlayerId = players[i]
+        closestPlayerId = playerId
     end
   end
   return closestPlayerId, closestDist
@@ -222,21 +204,52 @@ function PV.ForgetAllVehicles()
   end
 end
 
+function PV.SavedPlayerVehiclesToFile()
+  SaveResourceFile(GetCurrentResourceName(), "vehicle-data.json", json.encode(PV.vehicles), -1)
+  print('Persistent Vehicles: All vehicles saved to file')
+end
+
+function PV.LoadVehiclesFromFile() 
+  local SavedPlayerVehicles = LoadResourceFile(GetCurrentResourceName(), "vehicle-data.json")
+  if SavedPlayerVehicles ~= '' then
+      PV.vehicles = json.decode(SavedPlayerVehicles)
+      if not PV.vehicles then
+          PV.vehicles = {}
+      end
+      if PV.debugging then
+          print('Persistent Vehicles: Loaded '.. PV.Tablelength(PV.vehicles) .. ' Vehicle(s) from file')
+      end
+  end
+end
+
+-- main thread
 Citizen.CreateThread(function ()
+
+  local players = {}
+  local payloads = {}
+  local hasRequests = false
+
+  if Config.populateOnReboot then
+    PV.LoadVehiclesFromFile() 
+  end
   
-  local players
-  local payloads, requests = {}, 0
   while true do
+    
     repeat
       Citizen.Wait(Config.runEvery * 1000)
       players = PV.GetPlayers()
     until #players > 0
+    
+    local threadTime = os.clock()
+
     payloads = {}
-    requests = 0
+    hasRequests = false
+
     for plate, data in pairs(PV.vehicles) do
 
-        -- get the client which is currently closest to this vehicle
+      -- if vehicle entity exists, update it's data
       if DoesEntityExist(data.entity) then
+
         local coords =  GetEntityCoords(data.entity)
         local rot = GetEntityRotation(data.entity)
         
@@ -251,13 +264,19 @@ Citizen.CreateThread(function ()
         if data.props then
           data.props.locked = GetVehicleDoorLockStatus(data.entity)
           data.props.bodyHealth = GetVehicleBodyHealth(data.entity)
-          data.props.tankHealth = tonumber(GetVehiclePetrolTankHealth(data.entity))
-          data.props.fuelLevel = 25 -- maybe GetVehicleFuelLevel() will be implemented server side one day?
+          data.props.tankHealth = GetVehiclePetrolTankHealth(data.entity)
+          --data.props.fuelLevel = 25 -- maybe GetVehicleFuelLevel() will be implemented server side one day?
           --data.props.engineHealth = GetVehicleEngineHealth(data.entity) -- not working properly atm
           --data.props.dirtLevel = GetVehicleDirtLevel(data.entity) -- not working properly atm
         end
 
-      -- attempt to create spawn event for this vehicle
+        -- forget vehicle if destroyed
+        if Config.forgetOnDestroyed and (tonumber(data.props.bodyHealth) == 0 or not data.props.tankHealth) then
+          print('FORGETTING COS DESTROYED')
+          PV.ForgetVehicle(data.props.plate)
+        end
+
+      -- entity doesn't exist, attempt to create spawn event for this vehicle
       elseif data.pos then
 
         local closestPlayerId, closestDistance
@@ -276,11 +295,11 @@ Citizen.CreateThread(function ()
           
           if payloads[closestPlayerId] == nil then
             payloads[closestPlayerId] = {}
-            requests = requests + 1
+            hasRequests = true
           end
 
-          -- to prevent exceeding the gfx pool size, send a maximum of 26 at any one time 
-          if #payloads[closestPlayerId] < 26 then
+          -- to prevent exceeding the gfx pool size
+          if #payloads[closestPlayerId] < 51 then
             table.insert(payloads[closestPlayerId], data)
           else
             -- but we'll cache this for next time as getting the closest player is pretty expensive
@@ -298,7 +317,8 @@ Citizen.CreateThread(function ()
       end
     end
 
-    if requests > 0 then
+
+    if hasRequests then
 
       PV.waiting = {}
       -- consume any respawn requests we have
@@ -315,14 +335,14 @@ Citizen.CreateThread(function ()
       -- wait for the clients to report that they've finished spawning
       local waited = 0
       repeat
-        Citizen.Wait(1000)
+        Citizen.Wait(100)
         waited = waited + 1
 
-        if PV.debugging and waited == 6 then
+        if PV.debugging and waited == 60 then
           print('Persistent Vehicles: Waited too long for the clients to respawn vehicles')
         end
 
-      until PV.Tablelength(PV.waiting) == 0 or waited == 6
+      until PV.Tablelength(PV.waiting) == 0 or waited == 60
     end
 
   end
@@ -331,18 +351,17 @@ end)
 if Config.entityManagement then
   Citizen.CreateThread(function()
     while true do 
-      Wait(2500)
+      Wait(3000)
       
       local payloads = {}
       local vehicles = GetAllVehicles()
 
       for i = 1, #vehicles do
-        Wait(0)
         local entity = vehicles[i]
         if entity > 0 and DoesEntityExist(entity) then
           local coords = GetEntityCoords(entity)
           local closestPlayerId, closestDistance = PV.GetClosestPlayerToCoords(coords)
-          if closestDistance > Config.entityManagementDistance then
+          if closestDistance ~= nil and closestDistance > Config.entityManagementDistance then
             local playerSource = NetworkGetEntityOwner(entity)
             if not payloads[playerSource] then
               payloads[playerSource] = {}
@@ -353,6 +372,7 @@ if Config.entityManagement then
       end
 
       for _source, payload in pairs(payloads) do
+        print('removing vehicle')
         TriggerClientEvent('persistent-vehicles/remove-vehicle', _source, payload)
         if PV.debugging then
           print('Persistent Vehicles: Deleting Distant Entities | Amount:', #payload, 'Client:', _source, 'Entities\' NetIds:', table.concat( payload, ", "))

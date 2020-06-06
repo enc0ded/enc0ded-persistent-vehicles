@@ -8,6 +8,7 @@ version '1.0.0'
 
 client_scripts {
 	'config.lua',
+	'client/entityiter.lua',
 	'client/_utils.lua',
 	'client/main.lua',
 }

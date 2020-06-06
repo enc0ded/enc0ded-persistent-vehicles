@@ -1,9 +1,24 @@
 _Utils = {}
 
-_Utils.GetVehicleProperties = function(vehicle)
+_Utils.GetVehicleProperties = function(vehicle, light)
 	if DoesEntityExist(vehicle) then
+
 		local colorPrimary, colorSecondary = GetVehicleColours(vehicle)
 		local pearlescentColor, wheelColor = GetVehicleExtraColours(vehicle)
+
+ 		if light then
+			return {
+				model             = GetEntityModel(vehicle),
+				plate             = _Utils.Trim(GetVehicleNumberPlateText(vehicle)),
+				plateIndex        = GetVehicleNumberPlateTextIndex(vehicle),
+				color1            = colorPrimary,
+				color2            = colorSecondary,
+				pearlescentColor  = pearlescentColor,
+				wheelColor        = wheelColor,
+				modLivery         = GetVehicleLivery(vehicle)
+			}
+		end
+
 		local extras = {}
 
 		for id=0, 12 do
@@ -13,7 +28,7 @@ _Utils.GetVehicleProperties = function(vehicle)
 			end
 		end
 
-		return {
+		local props = {
 			model             = GetEntityModel(vehicle),
 
 			plate             = _Utils.Trim(GetVehicleNumberPlateText(vehicle)),
@@ -95,6 +110,14 @@ _Utils.GetVehicleProperties = function(vehicle)
 			modWindows        = GetVehicleMod(vehicle, 46),
 			modLivery         = GetVehicleLivery(vehicle)
 		}
+		
+		for k, v in pairs(props) do
+			if v == false or v == -1 then
+				props[k] = nil
+			end
+		end
+		
+		return props
 	else
 		return
 	end
@@ -188,6 +211,11 @@ _Utils.SetVehicleProperties = function(vehicle, props)
 			SetVehicleMod(vehicle, 48, props.modLivery, false)
 			SetVehicleLivery(vehicle, props.modLivery)
 		end
+
+		while not IsVehicleModLoadDone(vehicle) do 
+			Wait(0)
+		end
+
 	end
 end
 
@@ -220,8 +248,14 @@ _Utils.CreateVehicle = function(model, pos, props)
 	end
 
 	RequestCollisionAtCoord(pos.x, pos.y, pos.z)
-	while not HasCollisionLoadedAroundEntity(vehicle) do
-		Wait(0)
+	local limit = 1
+	while (not HasCollisionLoadedAroundEntity(vehicle) or not IsVehicleModLoadDone(vehicle)) and limit < 4000 do
+		Wait(1)
+		limit = limit + 1
+		if limit == 4000 then
+			print('deleting')
+			DeleteEntity(vehicle)
+		end
 	end
 
 	return vehicle
@@ -242,4 +276,40 @@ _Utils.Trim = function(value)
 	else
 		return nil
 	end
+end
+
+_Utils.GetVehicles = function()
+	local vehicles = {}
+
+	for vehicle in EnumerateVehicles() do
+		table.insert(vehicles, vehicle)
+	end
+
+	return vehicles
+end
+
+_Utils.GetVehiclesInArea = function(coords, area)
+	local vehicles = _Utils.GetVehicles()
+	local vehiclesInArea = {}
+
+	for i=1, #vehicles, 1 do
+		local vehicleCoords = GetEntityCoords(vehicles[i])
+		local distance      = GetDistanceBetweenCoords(vehicleCoords, coords.x, coords.y, coords.z, true)
+
+		if distance <= area then
+			table.insert(vehiclesInArea, vehicles[i])
+		end
+	end
+
+	return vehiclesInArea
+end
+
+_Utils.GetDuplicateVehicleCloseby = function(plate, coords, area)
+	local vehicles = _Utils.GetVehiclesInArea(coords, area)
+	for i,v in ipairs(vehicles) do
+		if _Utils.Trim(GetVehicleNumberPlateText(v)) == plate then
+			return v
+		end
+	end
+	return false
 end
