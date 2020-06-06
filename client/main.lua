@@ -19,7 +19,6 @@ AddEventHandler('persistent-vehicles/spawn-vehicles', function (datas)
 
 		-- this is a hacky way of stopping duplicates, until this https://github.com/citizenfx/natives/issues/315 this fixed
 		local entity = _Utils.GetDuplicateVehicleCloseby(data.props.plate, data.pos, 25)
-
 		if not entity then
 			entity = _Utils.CreateVehicle(data.props.model, data.pos, data.props)
 		end
@@ -38,3 +37,10 @@ if Config.entityManagement then
 		end
 	end)
 end
+
+Citizen.CreateThread(function() 
+	while not DoesEntityExist(PlayerPedId(-1)) do
+		Wait(100)
+	end
+	TriggerServerEvent('persistent-vehicles/new-player') 
+end)
