@@ -272,7 +272,6 @@ Citizen.CreateThread(function ()
 
         -- forget vehicle if destroyed
         if Config.forgetOnDestroyed and (tonumber(data.props.bodyHealth) == 0 or not data.props.tankHealth) then
-          print('FORGETTING COS DESTROYED')
           PV.ForgetVehicle(data.props.plate)
         end
 
