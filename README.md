@@ -2,28 +2,22 @@
 
 This mod prevents vehicles from disappearing in OneSync multiplayer servers. It can also respawn vehicles in their previous location after a server restart.
 
-
-
-
 ## Requirements
-FiveM Version >=2443
-
-OneSync - This mod will not work without OneSync.
-
-
+>FiveM Version >=2443
+>OneSync - This mod will not work without OneSync.
+ 
 ## Installation
-
 Download or clone from repo. Place the enc0ded-persistent-vehicles folder in your resources folder. Open config.lua and configure to your needs. Start the resource.
 ```bash
 start enc0ded-persistent-vehicles
 ```
 
 ## Usage
-
 To make a vehicle persistent, pass its entity to the event below in a client script. For example if you are using ESX you can put this in the call back of the ESX.Game.SpawnVehicle function.
 ```lua
   # client event
   TriggerEvent('persistent-vehicles/register-vehicle', entity)
+
 ```
 Stop a vehicle from being persistent and allow it to be removed as normal. Does not delete the vehicle.
 Call this when a player puts away a vehicle. Also remember to call this on your admin delete vehicle commands.
@@ -42,7 +36,7 @@ Alternatively you can stop the resource which will do this automatically.
 StopResource('enc0ded-persistent-vehicles')
 ```
 
-## Console
+## Server Console Commands
 Cull persistent vehicles
 ```bash
 pv-cull <number of vehicles>
@@ -50,6 +44,14 @@ pv-cull <number of vehicles>
 Unpersist vehicles
 ```bash
 pv-forget-all
+```
+Get number of vehicles spawned on the map
+```bash
+pv-num-spawned
+```
+Get number of vehicles registered as persistent
+```bash
+pv-num-registered
 ```
 Toggle console debugging messages
 ```bash
