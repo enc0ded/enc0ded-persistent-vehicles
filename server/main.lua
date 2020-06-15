@@ -14,6 +14,15 @@ AddEventHandler('persistent-vehicles/server/register-vehicle', function (netId, 
   PV.RegisterVehicle(netId, props)
 end)
 
+RegisterServerEvent('persistent-vehicles/server/update-vehicle')
+AddEventHandler('persistent-vehicles/server/update-vehicle', function (plate, props)
+  if PV.vehicles[plate] == nil then return end
+  PV.vehicles[plate].props = props
+  if PV.debugging then
+    print('Persistent Vehicles: Update Vehicle Props - ' .. plate)
+  end
+end)
+
 RegisterServerEvent('persistent-vehicles/server/forget-vehicle')
 AddEventHandler('persistent-vehicles/server/forget-vehicle', function (plate)
   PV.ForgetVehicle(plate)
