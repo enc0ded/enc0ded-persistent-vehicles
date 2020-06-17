@@ -350,7 +350,7 @@ function PV:UpdateAllVehicleData()
         data.props.locked = GetVehicleDoorLockStatus(data.entity)
         data.props.bodyHealth = GetVehicleBodyHealth(data.entity)
         data.props.tankHealth = GetVehiclePetrolTankHealth(data.entity)
-	data.props.engine = GetIsVehicleEngineRunning(data.entity)
+	      --data.props.engine = GetIsVehicleEngineRunning(data.entity)
         --data.props.fuelLevel = 25 -- maybe GetVehicleFuelLevel() will be implemented server side one day?
         --data.props.engineHealth = GetVehicleEngineHealth(data.entity) -- not working properly atm
         --data.props.dirtLevel = GetVehicleDirtLevel(data.entity) -- not working properly atm
@@ -367,7 +367,7 @@ function PV:UpdateAllVehicleData()
   end
 end
  
-function PV:runEntityMangement()
+function PV:RunEntityMangement()
   local payloads = {}
   local vehicles = GetAllVehicles()
 
@@ -402,16 +402,15 @@ Citizen.CreateThread(function ()
   end
   
   while true do
-
-    Citizen.Wait(1750)
+    Citizen.Wait(1500)
     PV:TriggerSpawnEvents()
-    
+
     Citizen.Wait(0)
     PV:UpdateAllVehicleData()
-
+    
     if Config.entityManagement then
       Citizen.Wait(0)
-      PV:runEntityMangement()
+      PV:RunEntityMangement()
     end
 
   end
