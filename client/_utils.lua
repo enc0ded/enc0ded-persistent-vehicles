@@ -5,6 +5,7 @@ _Utils.GetVehicleProperties = function(vehicle, light)
 
 		local colorPrimary, colorSecondary = GetVehicleColours(vehicle)
 		local pearlescentColor, wheelColor = GetVehicleExtraColours(vehicle)
+		local interiorColor     = GetVehicleInteriorColour(vehicle)
 
  		if light then
 			return {
@@ -13,6 +14,7 @@ _Utils.GetVehicleProperties = function(vehicle, light)
 				plateIndex        = GetVehicleNumberPlateTextIndex(vehicle),
 				color1            = colorPrimary,
 				color2            = colorSecondary,
+				interiorColor	  = interiorColor,
 				pearlescentColor  = pearlescentColor,
 				wheelColor        = wheelColor,
 				modLivery         = GetVehicleLivery(vehicle)
@@ -41,7 +43,8 @@ _Utils.GetVehicleProperties = function(vehicle, light)
 			dirtLevel         = _Utils.Trim(GetVehicleDirtLevel(vehicle), 1),
 			color1            = colorPrimary,
 			color2            = colorSecondary,
-
+			
+			interiorColor     = interiorColor,
 			pearlescentColor  = pearlescentColor,
 			wheelColor        = wheelColor,
 
@@ -137,6 +140,7 @@ _Utils.SetVehicleProperties = function(vehicle, props)
 		if props.dirtLevel then SetVehicleDirtLevel(vehicle, props.dirtLevel + 0.0) end
 		if props.color1 then SetVehicleColours(vehicle, props.color1, colorSecondary) end
 		if props.color2 then SetVehicleColours(vehicle, props.color1 or colorPrimary, props.color2) end
+		if props.interiorColor then SetVehicleInteriorColour(vehicle, props.interiorColor) end
 		if props.pearlescentColor then SetVehicleExtraColours(vehicle, props.pearlescentColor, wheelColor) end
 		if props.wheelColor then SetVehicleExtraColours(vehicle, props.pearlescentColor or pearlescentColor, props.wheelColor) end
 		if props.wheels then SetVehicleWheelType(vehicle, props.wheels) end
