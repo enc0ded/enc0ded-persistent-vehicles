@@ -249,6 +249,7 @@ _Utils.CreateVehicle = function(model, pos, props)
 	if props then
 		_Utils.SetVehicleProperties(vehicle, props)
 		SetVehicleDoorsLocked(vehicle, props.locked)
+		SetVehicleEngineOn(vehicle, props.engine, true, true)
 	end
 
 	RequestCollisionAtCoord(pos.x, pos.y, pos.z)
