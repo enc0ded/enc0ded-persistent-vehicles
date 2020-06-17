@@ -350,7 +350,7 @@ function PV:UpdateAllVehicleData()
         data.props.locked = GetVehicleDoorLockStatus(data.entity)
         data.props.bodyHealth = GetVehicleBodyHealth(data.entity)
         data.props.tankHealth = GetVehiclePetrolTankHealth(data.entity)
-	      --data.props.engine = GetIsVehicleEngineRunning(data.entity)
+	      data.props.engine = GetIsVehicleEngineRunning(data.entity)
         --data.props.fuelLevel = 25 -- maybe GetVehicleFuelLevel() will be implemented server side one day?
         --data.props.engineHealth = GetVehicleEngineHealth(data.entity) -- not working properly atm
         --data.props.dirtLevel = GetVehicleDirtLevel(data.entity) -- not working properly atm
