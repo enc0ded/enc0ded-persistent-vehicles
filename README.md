@@ -19,6 +19,12 @@ To make a vehicle persistent, pass its entity to the event below in a client scr
   TriggerEvent('persistent-vehicles/register-vehicle', entity)
 
 ```
+To update a persistent vehicle, pass its entity to the event below in a client script. For example if you are using ESX you can put this in the call back of the ESX.Game.SetVehicleProperties function.
+```lua
+  # client event
+ TriggerEvent('persistent-vehicles/server/update-vehicle', entity)
+
+```
 Stop a vehicle from being persistent and allow it to be removed as normal. Does not delete the vehicle.
 Call this when a player puts away a vehicle. Also remember to call this on your admin delete vehicle commands.
 ```lua
