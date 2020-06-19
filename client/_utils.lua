@@ -258,10 +258,11 @@ _Utils.CreateVehicle = function(model, pos, props)
 		Wait(1)
 		limit = limit + 1
 		if limit == 4000 then
-			print('deleting')
 			DeleteEntity(vehicle)
 		end
 	end
+
+	SetVehicleOnGroundProperly(vehicle)
 
 	return vehicle
 end

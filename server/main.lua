@@ -332,8 +332,9 @@ function PV:UpdateAllVehicleData()
 
   for plate, data in pairs(self.vehicles) do
 
-    if DoesEntityExist(data.entity) then
-
+    if not data.entity or not DoesEntityExist(data.entity) then
+      data.entity = nil
+    else
       local coords =  GetEntityCoords(data.entity)
       local rot = GetEntityRotation(data.entity)
       
@@ -363,6 +364,7 @@ function PV:UpdateAllVehicleData()
       else
         PV.ForgetVehicle(plate)
       end
+      
     end
   end
 end
