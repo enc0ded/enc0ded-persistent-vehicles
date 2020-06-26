@@ -7,7 +7,7 @@ Config = {
   respawnDistance = 400, -- 300+
 
   -- don't respawn a vehicle if it gets deleted after it is destroyed
-  forgetOnDestroyed = true,
+  forgetOnDestroyed = true, -- not working due to onesync bug!! 
 
  -- enable debugging to see server console messages; can be toggled with server command: pv-toggle-debugging
   debug = false, 

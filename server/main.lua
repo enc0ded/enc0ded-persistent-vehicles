@@ -332,11 +332,9 @@ function PV:UpdateAllVehicleData()
 
   for plate, data in pairs(self.vehicles) do
 
-    if not data.entity or not DoesEntityExist(data.entity) then
-      data.entity = nil
-    else
+    if DoesEntityExist(data.entity) then
       local coords =  GetEntityCoords(data.entity)
-      local rot = GetEntityRotation(data.entity)
+      local rot = GetEntityRotation(data.entity) -- returns inconsistent results in newer version of OneSync
       
       -- coords sometimes returns nil for no reason
       data.pos = {
@@ -346,20 +344,20 @@ function PV:UpdateAllVehicleData()
         h = GetEntityHeading(data.entity),
         r = { x = rot.x, y = rot.y, z = rot.z }
       }
-
+      
       if data.props then
+        
         data.props.locked = GetVehicleDoorLockStatus(data.entity)
-        data.props.bodyHealth = GetVehicleBodyHealth(data.entity)
-        data.props.tankHealth = GetVehiclePetrolTankHealth(data.entity)
+
 	      data.props.engine = GetIsVehicleEngineRunning(data.entity)
         --data.props.fuelLevel = 25 -- maybe GetVehicleFuelLevel() will be implemented server side one day?
         --data.props.engineHealth = GetVehicleEngineHealth(data.entity) -- not working properly atm
         --data.props.dirtLevel = GetVehicleDirtLevel(data.entity) -- not working properly atm
 
         -- forget vehicle if destroyed
-        if Config.forgetOnDestroyed and (tonumber(data.props.bodyHealth) == 0 or not data.props.tankHealth) then
+      --[[   if Config.forgetOnDestroyed and (tonumber(data.props.bodyHealth) == 0 or not data.props.tankHealth) then
           PV.ForgetVehicle(plate)
-        end
+        end ]]
 
       else
         PV.ForgetVehicle(plate)
@@ -405,11 +403,12 @@ Citizen.CreateThread(function ()
   
   while true do
     Citizen.Wait(1500)
-    PV:TriggerSpawnEvents()
+    PV:UpdateAllVehicleData()
 
     Citizen.Wait(0)
-    PV:UpdateAllVehicleData()
-    
+    PV:TriggerSpawnEvents()
+
+
     if Config.entityManagement then
       Citizen.Wait(0)
       PV:RunEntityMangement()
@@ -417,4 +416,3 @@ Citizen.CreateThread(function ()
 
   end
 end)
-

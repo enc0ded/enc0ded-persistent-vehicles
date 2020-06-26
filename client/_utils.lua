@@ -234,11 +234,10 @@ _Utils.CreateVehicle = function(model, pos, props)
 	end
 
 	local vehicle = CreateVehicle(model, pos.x, pos.y, pos.z, pos.h, true, false)
-	local id = NetworkGetNetworkIdFromEntity(vehicle)
 	if pos.r then
 		SetEntityRotation(vehicle, pos.r.x, pos.r.y, pos.r.z, 1, true)
 	end
-	
+	local id = NetworkGetNetworkIdFromEntity(vehicle)
 	SetNetworkIdCanMigrate(id, true)
 	SetEntityAsMissionEntity(vehicle, true, false)
 	SetVehicleHasBeenOwnedByPlayer(vehicle, true)
@@ -261,8 +260,6 @@ _Utils.CreateVehicle = function(model, pos, props)
 			DeleteEntity(vehicle)
 		end
 	end
-
-	SetVehicleOnGroundProperly(vehicle)
 
 	return vehicle
 end

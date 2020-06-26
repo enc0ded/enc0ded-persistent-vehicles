@@ -30,7 +30,6 @@ AddEventHandler('persistent-vehicles/spawn-vehicles', function (datas)
 		if not entity then
 			entity = _Utils.CreateVehicle(data.props.model, data.pos, data.props)
 		end
-
 		table.insert(updatedNetIds, {netId = NetworkGetNetworkIdFromEntity(entity), plate = data.props.plate})
 	end
 	Wait(100)
