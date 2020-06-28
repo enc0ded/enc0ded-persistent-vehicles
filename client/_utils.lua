@@ -44,6 +44,9 @@ _Utils.GetVehicleProperties = function(vehicle, light)
 			color1            = colorPrimary,
 			color2            = colorSecondary,
 			
+			rgbcolor1 = {GetVehicleCustomPrimaryColour(vehicle)},
+			rgbcolor2 = {GetVehicleCustomSecondaryColour(vehicle)},
+			
 			interiorColor     = interiorColor,
 			pearlescentColor  = pearlescentColor,
 			wheelColor        = wheelColor,
@@ -145,6 +148,8 @@ _Utils.SetVehicleProperties = function(vehicle, props)
 		if props.wheelColor then SetVehicleExtraColours(vehicle, props.pearlescentColor or pearlescentColor, props.wheelColor) end
 		if props.wheels then SetVehicleWheelType(vehicle, props.wheels) end
 		if props.windowTint then SetVehicleWindowTint(vehicle, props.windowTint) end
+		if props.rgbcolor1 then SetVehicleCustomPrimaryColour(vehicle, props.rgbcolor1[1], props.rgbcolor1[2], props.rgbcolor1[3]) end
+		if props.rgbcolor2 then SetVehicleCustomSecondaryColour(vehicle, props.rgbcolor2[1], props.rgbcolor2[2], props.rgbcolor2[3]) end
 
 		if props.neonEnabled then
 			SetVehicleNeonLightEnabled(vehicle, 0, props.neonEnabled[1])
