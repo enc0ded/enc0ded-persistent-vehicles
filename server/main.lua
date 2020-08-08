@@ -7,11 +7,11 @@ local PV = {
 
 -- events
 RegisterServerEvent('persistent-vehicles/server/register-vehicle')
-AddEventHandler('persistent-vehicles/server/register-vehicle', function (netId, props)
+AddEventHandler('persistent-vehicles/server/register-vehicle', function (netId, props, forgetOn)
   local _source = source
   if type(netId) ~= 'number' then return end
   PV.players[_source] = true
-  PV.RegisterVehicle(netId, props)
+  PV.RegisterVehicle(netId, props, forgetOn)
 end)
 
 RegisterServerEvent('persistent-vehicles/server/update-vehicle')
@@ -187,13 +187,17 @@ function PV.GetClosestPlayerToCoords(coords)
   return closestPlayerId, closestDist
 end
 
-function PV.RegisterVehicle(netId, props)
+function PV.RegisterVehicle(netId, props, forgetOn)
   if PV.vehicles[props.plate] ~= nil then return end
   -- don't register the vehicle immediately incase it is deleted straight away
   Citizen.SetTimeout(1500, function ()
     local entity = PV.GetVehicleEntityFromNetId(netId)
     if not entity then return end
-    PV.vehicles[props.plate] = {entity = entity, props = props}
+    local vehicle = { entity = entity, props = props }
+    if forgetOn ~= nil then
+      vehicle.forgetAt = forgetOn + GetGameTimer();
+    end
+    PV.vehicles[props.plate] = vehicle
     if PV.debugging then
       print('Persistent Vehicles: Registered Vehicle', props.plate, netId, entity)
     end
@@ -266,6 +270,11 @@ function PV:TriggerSpawnEvents()
   local requests = 0
   local spawned = 0
   for plate, data in pairs(self.vehicles) do
+    if data.forgetAt ~= nil then
+      if GetGameTimer() > data.forgetAt then
+        self.ForgetVehicle(plate)
+      end
+    end
     if not DoesEntityExist(data.entity) then
       if data.pos then
         -- throttle if request gets too large

@@ -1,8 +1,8 @@
 RegisterNetEvent('persistent-vehicles/register-vehicle')
-AddEventHandler('persistent-vehicles/register-vehicle', function (entity, light)
+AddEventHandler('persistent-vehicles/register-vehicle', function (entity, light, forgetOn)
 	Wait(0)
 	local props = _Utils.GetVehicleProperties(entity, light)
-	TriggerServerEvent('persistent-vehicles/server/register-vehicle', NetworkGetNetworkIdFromEntity(entity), props)
+	TriggerServerEvent('persistent-vehicles/server/register-vehicle', NetworkGetNetworkIdFromEntity(entity), props, forgetOn)
 end)
 
 RegisterNetEvent('persistent-vehicles/update-vehicle')
